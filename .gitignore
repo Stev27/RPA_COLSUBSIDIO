@@ -1,0 +1,50 @@
+# ===========================
+# ARCHIVOS DE PYTHON
+# ===========================
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+ 
+# Carpetas de entorno virtual
+venv/
+env/
+.venv/
+pyvenv.cfg
+entornodesarrollo/
+pyvenv.cfg
+
+# ===========================
+# ARCHIVOS DE CONFIGURACION
+# ===========================
+# Variables de entorno
+.env
+
+# ===========================
+# ARCHIVOS GENERADOS / LOGS
+# ===========================
+*.log
+export.txt
+ 
+# ===========================
+# EDITOR / SISTEMA
+# ===========================
+# VSCod
+.vscode/
+ 
+# Windows
+Thumbs.db
+desktop.ini
+ 
+# ===========================
+# OTROS
+# ===========================
+
+# Archivos temporales
+*.tmp
+*.bak
+ 
+# Evitar subida de archivos grandes o sensibles
+*.zip
+*.rar
+.env

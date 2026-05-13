@@ -1,0 +1,246 @@
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from webdriver_manager.chrome import ChromeDriverManager
+from selenium.webdriver.chrome.options import Options
+
+
+from datetime import date 
+from pathlib import Path
+from Config.init_config import in_config
+#import shutil
+import time
+import os
+import traceback
+
+#from Config.init_config import in_config
+
+import logging
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+
+
+
+
+def login_colsubsidio(usuario, contraseña, ruta):
+    chrome_options = Options()
+    chrome_options.add_experimental_option("detach", True)
+    
+    prefs = {
+        "download.default_directory": in_config('PathXML'),
+        "download.prompt_for_download": False,
+        "download.directory_upgrade": True,
+        "safebrowsing.enabled": True, 
+        "profile.default_content_setting_values.automatic_downloads": 1,
+        "safebrowsing.disable_download_protection": False,
+        "download.extensions_to_open": "xml",
+    }
+    chrome_options.add_experimental_option("prefs", prefs)
+    
+
+    # y usamos el driver normalmente
+    driver = webdriver.Chrome(
+        service=Service(ChromeDriverManager().install()),
+        options=chrome_options
+    )
+    
+    wait = WebDriverWait(driver, 25)
+    driver.get(ruta)
+    driver.maximize_window()
+
+    try:
+        # --- Lógica de Usuario y Contraseña ---
+        user_input = wait.until(EC.presence_of_element_located((By.ID, "txtUser")))
+        user_input.send_keys(usuario)
+
+        pass_input = wait.until(EC.presence_of_element_located((By.ID, "txtPass")))
+        pass_input.send_keys(contraseña)
+
+        btn_login = wait.until(EC.element_to_be_clickable((By.ID, "btnIngresarLogin")))
+        driver.execute_script("arguments[0].click();", btn_login)
+
+        # 3. Esperar el resultado
+        wait.until(
+            lambda d: "/Home/Index" in d.current_url or 
+            len(d.find_elements(By.ID, "lblError")) > 0 or 
+            len(d.find_elements(By.ID, "dvCaptcha")) > 0
+        )
+
+        # Caso Exitoso
+        if "/Home/Index" in driver.current_url:
+            logger.debug("Login exitoso")
+            return driver # Retornamos el objeto para usarlo fuera
+
+        # Manejo de errores (si no entró a /Home/Index)
+        if driver.find_elements(By.ID, "dvCaptcha"):
+            logger.debug("Captcha detectado")
+        
+        error_elements = driver.find_elements(By.ID, "lblError")
+        if error_elements and error_elements[0].text:
+            logger.error(f"Error: {error_elements[0].text}")
+
+        return driver
+
+    except Exception as e:
+        logger.exception(f"Error inesperado: {e}")
+        driver.save_screenshot(os.path.join(in_config('PathScreenshots'), "error.png"))
+        return driver
+    
+
+def realizar_consulta(contador, driver, nro_documento = None):  # oc = None
+
+    fecha_actual = date.today()
+    fecha_inicial = date(fecha_actual.year, fecha_actual.month, 1) # fecha_inicial = date(fecha_actual.year, 4, 1)
+
+    # Formato dd/mm/yyyy
+    fecha_final_str = fecha_actual.strftime("%Y/%m/%d")
+    fecha_inicial_str = fecha_inicial.strftime("%Y/%m/%d")
+    wait = WebDriverWait(driver, 20)
+    
+    try:
+        # 1. Click en el menú "Consultas"
+        menu_consultas = wait.until(EC.element_to_be_clickable((By.LINK_TEXT, "Consultas")))
+        menu_consultas.click()
+        logger.debug("Menu Consultas abierto")
+        time.sleep(1) 
+
+        # 2. Click en "Recepción validación previa"
+        # Usamos PARTIAL_LINK_TEXT por si hay espacios extra
+        opcion_recepcion = wait.until(EC.element_to_be_clickable((By.PARTIAL_LINK_TEXT, "Recepción validación previa")))
+        opcion_recepcion.click()
+        logger.debug("Entrando a Recepcion validacion previa...")
+        time.sleep(1) 
+
+        # --- Esperar a que cargue el formulario ---
+        wait.until(EC.presence_of_element_located((By.ID, "tbNumeroDocumento")))
+        time.sleep(1) 
+
+        # 3. Llenar Fechas usando JavaScript (ya que están 'disabled')
+        # Esto quita el bloqueo y pone el valor directamente
+        script_fechas = """
+            var f_ini = document.getElementById('dpFechaInicioExpe');
+            var f_fin = document.getElementById('dpFechaFinExpe');
+            f_ini.removeAttribute('disabled');
+            f_fin.removeAttribute('disabled');
+            f_ini.value = arguments[0];
+            f_fin.value = arguments[1];
+        """
+        driver.execute_script(script_fechas, fecha_inicial_str, fecha_final_str)
+        logger.debug(f"Fechas establecidas: {fecha_inicial_str} - {fecha_final_str}")
+        time.sleep(1) 
+
+        # 4. Llenar por OC
+        if nro_documento:
+            criterio_xpath = "//input[@id='ddlCriterioBusqueda']/preceding-sibling::span"
+            criterio_dropdown = wait.until(EC.element_to_be_clickable((By.XPATH, criterio_xpath)))
+            criterio_dropdown.click()
+            logger.debug("Dropdown 'Criterio de Busqueda' abierto")
+            time.sleep(2) 
+
+            # Ahora buscamos la opción "Nro Orden de Compra" en la lista desplegable
+            if contador ==1:
+                opcion_orden = wait.until(EC.element_to_be_clickable((By.XPATH, "//li[text()='Nro Documento']"))) #"Nro Orden de Compra"
+                opcion_orden.click()
+            elif contador > 1:
+                opcion_orden = wait.until( EC.presence_of_element_located((By.XPATH, "//li[@data-offset-index='1']")) )
+                driver.execute_script("arguments[0].click();", opcion_orden)
+
+                script_fechas = """
+                var f_ini = document.getElementById('dpFechaInicioExpe');
+                var f_fin = document.getElementById('dpFechaFinExpe');
+                f_ini.removeAttribute('disabled');
+                f_fin.removeAttribute('disabled');
+                f_ini.value = arguments[0];
+                f_fin.value = arguments[1];
+                """
+                driver.execute_script(script_fechas, fecha_inicial_str, fecha_final_str)
+                logger.debug(f"Fechas establecidas: {fecha_inicial_str} - {fecha_final_str}")
+                time.sleep(1)
+
+            logger.debug("Criterio cambiado a: Nro Orden de Compra")
+            time.sleep(1) 
+
+            # Setea valor de la OC en el campo de "Nro de Busqueda"
+            nro_input = driver.find_element(By.ID, "tbNumeroIdentificacionEmisor")
+            nro_input.clear()
+            nro_input.send_keys(nro_documento)
+            logger.debug(f"Número de documento ingresado: {nro_documento}")
+            time.sleep(2) 
+        # 5. Click en el botón Buscar
+        # Usamos el selector CSS para el botón que tiene la clase btn-success y el texto 
+        time.sleep(1)
+        btn_buscar = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, "button.btn-success.btnfix")))
+        driver.execute_script("arguments[0].click();", btn_buscar)
+        logger.debug("Botón Buscar presionado")
+        time.sleep(2) 
+
+    except Exception as e:
+        
+        logger.exception(f"Error durante la consulta: {e}") 
+        traceback.print_exc()
+        driver.save_screenshot(os.path.join(in_config('PathScreenshots'), "error_consulta.png"))
+        raise
+        
+def descargar_xml_final(driver, valor):
+    wait = WebDriverWait(driver, 20)
+    xpath_xml = "//img[@title='Presenta el documento en XML firmado digitalmente']"
+    xml_icon = wait.until(EC.element_to_be_clickable((By.XPATH, xpath_xml)))
+    try:
+        columnas = driver.find_elements(By.XPATH, '//td[@role="gridcell"]')
+        contador=0
+        for celda in columnas:
+            if celda.text.strip() == valor:
+                logger.debug("Valor encontrado:", celda.text)
+                # Aquí puedes hacer algo con el elemento, por ejemplo:
+                driver.execute_script(f"arguments[{contador}].click();", xml_icon)
+                contador+=1
+                
+                break
+            else:
+                logger.debug(f"Valor no encontrado {valor}- {celda}")
+        # Esperar a que los resultados carguen y el icono sea visible
+        # xpath_xml = "//img[@title='Presenta el documento en XML firmado digitalmente']"
+        # xml_icon = wait.until(EC.element_to_be_clickable((By.XPATH, xpath_xml)))
+        time.sleep(2) 
+        # Click para descargar
+        driver.execute_script("arguments[0].click();", xml_icon)
+        logger.debug("Descarga activada. Verifica tu carpeta.")
+        time.sleep(5) 
+        #elemento = driver.find_element(By.CLASS_NAME, "logo-page") 
+        #elemento.click()
+        
+    except Exception as e:
+        logger.exception(f"Error al descargar: {e}")
+
+
+def renombrar_archivo(rutaCarpeta, nuevoNombre, extension="xml"):
+    carpeta = Path(rutaCarpeta)
+
+    if not carpeta.exists():
+        logger.error(f"[-] La carpeta {carpeta} no existe")
+        return
+
+    # Obtener todos los archivos con la extensión indicada
+    archivos = list(carpeta.glob(f"*.{extension}"))
+
+    if not archivos:
+        logger.error("[-] No se encontraron archivos para renombrar")
+        return
+
+    # Ordenar por fecha de modificación y tomar el más reciente
+    archivos.sort(key=lambda f: f.stat().st_mtime)
+    ultimo_archivo = archivos[-1]
+
+    nombre = f"{nuevoNombre}{ultimo_archivo.suffix}"
+    nueva_ruta = carpeta / nombre
+
+    try:
+        if os.path.exists(nueva_ruta):
+            os.remove(nueva_ruta)
+        os.rename(ultimo_archivo, nueva_ruta)
+        logger.info(f"[+] {ultimo_archivo.name} -> {nombre}")
+    except Exception as e:
+        logger.exception(f"[-] Error al cambiar el nombre del archivo {ultimo_archivo.name}: {e}")

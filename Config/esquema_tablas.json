@@ -1,0 +1,37 @@
+{
+  "CorreosEstrategias": {
+    "Estrategia": "VARCHAR(10)",
+    "EmailResponsable": "VARCHAR(100)",
+    "NombreResponsable": "VARCHAR(50)"
+    
+  },
+  "Arrendatarios": {
+    "NIT": "VARCHAR(100)",
+    "Nombre 1 (Arrendador)": "VARCHAR(200)",
+    "Correo Proveedor": "VARCHAR(100)",
+    "Inmueble": "VARCHAR(100)",
+    "No de contrato": "VARCHAR(100)",
+    "Tipo": "VARCHAR(100)"
+  },
+  "Responsables":{
+    "Responsable": "VARCHAR(100)",
+    "Correo": "VARCHAR(100)"
+  },
+    "PruebaEstandarSteven": {
+        "Estrategia": "VARCHAR(10)",
+        "Descripcion": "VARCHAR(50)"
+    },
+      "ControlHU": {
+        "HU": "INT",
+        "NombreHU": "VARCHAR(100)",
+        "Estado": "VARCHAR(50)",
+        "Activa": "BIT",
+        "Maquina": "VARCHAR(50)",
+        "FechaActualizacion": "DATETIME"
+      },
+      "Sheet1": {
+        "A": "INT",
+        "B": "VARCHAR(100)"
+       }
+
+}
