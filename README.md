@@ -1,4 +1,4 @@
-🤖 Colsubsiodio – Bot RPA Arrendamientos
+🤖 Colsubsiodio – Bot RPA
 📌 Descripción
 
 Colsubsiodio es un Esquema de Automatización Robótica de Procesos (RPA) diseñado para soportar y optimizar procesos RPA del cliente Colsubsidio.
