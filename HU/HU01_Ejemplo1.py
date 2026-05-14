@@ -59,6 +59,8 @@ class HU01_Ejemplo1:
                                   
             logger.debug(f" Aqui va la logica de la historia de Usuario HU1_Ejemplo {self.nombreTabla}...")
             
+            self.sap.iniciar_sesion_sap()
+            
             breakpoint()
             
             

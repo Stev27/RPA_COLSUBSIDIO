@@ -184,6 +184,8 @@ class Reutilizables:
         import pandas as pd
         from sqlalchemy import VARCHAR, Integer, Float, Date, DateTime, Boolean, Numeric, Text
         
+        from Config.Settings import SCHEMA
+        
         logger = logging.getLogger(__name__)
         # Asumo que db = Database() ya está definido en tu clase/módulo
         db = Database()
@@ -191,7 +193,7 @@ class Reutilizables:
 
         HOJA_TIPOS = "_TiposDatos"
         ruta_excel = rf"{in_config('PathParametrosRIGO')}"
-        esquema_destino = "Colsubsidio"
+        esquema_destino = SCHEMA["Schema"]
 
         # --- Mapa de texto → tipo SQLAlchemy ---
         def resolver_tipo(tipo_str: str):
@@ -440,7 +442,6 @@ ambiente = Reutilizables(
     in_config("PathResultado")
 )
 ambiente.crear_carpetas()
-
 ambiente.limpiar_carpeta(in_config('PathLog'), int(in_config("LimpiezaLogs"))) # Limpiar Carpeta Logs
 ambiente.limpiar_carpeta(in_config('PathScreenshots'), int(in_config("LimpiezaLogs")))  # Limpiar Carpeta Screenshots
 

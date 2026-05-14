@@ -15,7 +15,7 @@ import time
 import os
 import pyperclip
 import datetime
-from Funciones.Login import ObtenerSesionActiva
+from Funciones.ConexionSAP import ConexionSAP
 from Config.init_config import in_config
 from Config.Database import Database
 import logging
@@ -319,9 +319,20 @@ def descargadataestliberacion (session):
     try :
         db= Database()
         engine = db.get_engine()
+        sap = ConexionSAP() 
+        
+        # sap = ConexionSAP(
+        #     SAP_CONFIG.get('user'),
+        #     SAP_CONFIG.get('password'),
+        #     in_config('SapMandante'),
+        #     in_config('SapIdioma'),
+        #     in_config('SapRutaLogon'),
+        #     in_config('SapSistema')
+            
+        # )
         if not session:
             return
-        session = ObtenerSesionActiva()
+        session = sap.conectar_SAP()
         AbrirTransaccion(session, "ZMM_68")
         ahora = datetime.datetime.now() # Obtenemos la fecha y hora actual
         fecha_formateada = ahora.strftime("%d.%m.%Y") # Ejemplo de salida: 01.01.2026

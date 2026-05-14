@@ -3,6 +3,7 @@ from Config.Settings import SCHEMA
 
 import logging
 logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG) # DEBUG para desarrollo, INFO para producción  
 
 
 

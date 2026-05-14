@@ -11,8 +11,7 @@ db= Database()
 
 
 class ControlHURepository:
-    #def __init__(self, db: Database): # <-- El error está aquí si falta esto
-        #self.db = db
+
         
     def consultar_estado(self, nombre_hu: str):
         """

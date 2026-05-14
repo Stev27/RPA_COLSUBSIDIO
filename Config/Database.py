@@ -1,10 +1,12 @@
 import pyodbc
-import logging
+
 import urllib
 from sqlalchemy import create_engine
 from Config.Settings import DB_CONFIG
 
+import logging
 logger = logging.getLogger(__name__)
+
 
 class Database:
     def __init__(self):
