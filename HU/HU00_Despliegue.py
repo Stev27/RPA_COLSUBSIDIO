@@ -30,6 +30,7 @@ from datetime import datetime,timedelta
 
 from Config.init_config import init_config, in_config
 from Config.Database import Database
+from Config.Settings import Paths
 
 
 class Reutilizables:
@@ -434,16 +435,26 @@ class Reutilizables:
 Reutilizables.cargar_configuracion()
 
 ambiente = Reutilizables(
-    in_config("PathProyecto"),
-    in_config("PathAudit"),
-    in_config("PathLog"),
-    in_config("PathTemp"),
-    in_config("PathInsumo"),
-    in_config("PathResultado")
+    # in_config("PathProyecto"),
+    # in_config("PathAudit"),
+    # in_config("PathLog"),
+    # in_config("PathTemp"),
+    # in_config("PathInsumo"),
+    # in_config("PathResultado")
+    Paths.ROOT,
+    Paths.AUDIT,
+    Paths.LOGS,
+    Paths.TEMP,
+    Paths.INSUMO,
+    Paths.RESULTADO,
+    Paths.TEMP,
 )
 ambiente.crear_carpetas()
-ambiente.limpiar_carpeta(in_config('PathLog'), int(in_config("LimpiezaLogs"))) # Limpiar Carpeta Logs
-ambiente.limpiar_carpeta(in_config('PathScreenshots'), int(in_config("LimpiezaLogs")))  # Limpiar Carpeta Screenshots
+# ambiente.limpiar_carpeta(in_config('PathLog'), int(in_config("LimpiezaLogs"))) # Limpiar Carpeta Logs
+# ambiente.limpiar_carpeta(in_config('PathScreenshots'), int(in_config("LimpiezaLogs")))  # Limpiar Carpeta Screenshots
+
+ambiente.limpiar_carpeta(Paths.LOGS, int(in_config("LimpiezaLogs"))) # Limpiar Carpeta Logs
+ambiente.limpiar_carpeta(Paths.LOGS, int(in_config("LimpiezaLogs")))  # Limpiar Carpeta Screenshots
 
 mis_tablas_sql = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'Config', 'esquema_tablas.json')
 
@@ -460,7 +471,7 @@ except FileNotFoundError:
 Reutilizables.cargarParametros(esquema_custom)
 #Reutilizables.limpiar_carpeta_temp() # revisar temporales antes de borrar
 Reutilizables.cargarInsumosDB() # Carga insumos a la DB desde Excel (si aplica)
-Reutilizables.cerrar_chrome()
+#Reutilizables.cerrar_chrome()
 Reutilizables.cerrar_sap()
 
 

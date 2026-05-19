@@ -63,3 +63,29 @@ SCHEMA = {
 }
 
 
+
+class Paths:
+    # 1. Obtenemos la raíz desde el .env
+    # Si no existe en el .env, usa la carpeta actual como fallback
+    ROOT = Path(os.getenv("ROOT_PATH", os.getcwd()))
+
+    # 2. Definimos las subcarpetas de forma relativa
+    # ¡Aquí es donde ocurre la magia de la escalabilidad!
+    AUDIT      = ROOT / "Audit"
+    LOGS       = AUDIT / "Logs"
+    SCREENSHOTS = AUDIT / "Screenshots"
+    TEMP       = ROOT / "Temp"
+    INSUMO     = ROOT / "Insumo"
+    RESULTADO  = ROOT / "Resultado"
+    XMLS       = INSUMO / "XMLs"
+
+    # 3. Archivos específicos
+    EXCEL_PARAMETROS = INSUMO / "ParametrosRIGO.xlsx"
+    EXCEL_CORREOS    = INSUMO / "EnvioCorreos.xlsx"
+
+    @classmethod
+    def init_dirs(cls):
+        """Crea todas las carpetas automáticamente si no existen"""
+        for attr, value in cls.__dict__.items():
+            if isinstance(value, Path):
+                value.mkdir(parents=True, exist_ok=True)

@@ -10,7 +10,7 @@ def init_config():
     if _CONFIG_CACHE is not None:
         return
 
-    _CONFIG_CACHE = ParametrosRepository.cargar_parametros()
+    _CONFIG_CACHE = ParametrosRepository.cargar_parametros()  
 
 
 def in_config(nombre, default=None):
