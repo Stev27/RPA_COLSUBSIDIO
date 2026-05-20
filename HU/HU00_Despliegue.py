@@ -53,10 +53,12 @@ class Reutilizables:
         self.path_logs.mkdir(parents=True, exist_ok=True)
         maquina = socket.gethostname()
         usuario = getpass.getuser()
+        robbot = in_config("CodigoRobot")
+        
         # Nombre de archivo con timestamp
         timestamp = datetime.now().strftime("%Y%m%d")
         log_file = self.path_logs / f"Log_{maquina}_{usuario}_{timestamp}.txt"
-        robbot = in_config("CodigoRobot")
+        
         
         # Configuración del logger
         logging.basicConfig(
@@ -446,9 +448,9 @@ ambiente = Reutilizables(
     Paths.LOGS,
     Paths.TEMP,
     Paths.INSUMO,
-    Paths.RESULTADO,
-    Paths.TEMP,
-)
+    Paths.RESULTADO
+    )
+
 ambiente.crear_carpetas()
 # ambiente.limpiar_carpeta(in_config('PathLog'), int(in_config("LimpiezaLogs"))) # Limpiar Carpeta Logs
 # ambiente.limpiar_carpeta(in_config('PathScreenshots'), int(in_config("LimpiezaLogs")))  # Limpiar Carpeta Screenshots
